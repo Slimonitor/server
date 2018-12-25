@@ -9,7 +9,7 @@ const config = require('../config.js');
 const handlers = require('./handlers.js');
 
 mongoose.Promise = global.Promise;
-app.use(bodyParser.json());
+app.use(bodyParser.json(({limit: '50mb'})));
 app.post('/host/data', handlers.collectIncomingData);
 app.use(handlers.catchError);
 
