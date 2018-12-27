@@ -10,10 +10,11 @@ const handlers = require('./handlers.js');
 
 mongoose.Promise = global.Promise;
 app.use(bodyParser.json({limit: '50mb'}));
+app.post('/host/register', handlers.registerHost);
 app.post('/host/data', handlers.collectIncomingData);
 app.use(handlers.catchError);
 
-
+mongoose.set('useFindAndModify', false); // todo: remove in production phase after mongo updates crud
 mongoose.connect(config.mongoDbUrl, config.mongooseOptions).then(() => {
     debug('Connected to MongoDb');
     return util.promisify(app.listen).call(app, config.port);
