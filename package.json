@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha || exit 1",
     "start": "npm run build && DEBUG=slimonitor:* node dist/index.js",
     "start-windows": "npm run build && set DEBUG=slimonitor:* && node dist/index.js",
     "build": "babel src -d dist",
     "lint": "eslint src",
-    "pre-commit": "(npm run lint) || exit 1",
+    "pre-commit": "(npm run lint && npm test) || exit 1",
     "hooks": "(echo '#!/bin/sh' && echo 'npm run pre-commit') > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
     "hooks-windows": "(echo #!/bin/sh && echo npm run pre-commit) > .git/hooks/pre-commit"
   },
@@ -35,7 +35,9 @@
     "@babel/core": "^7.2.2",
     "@babel/preset-env": "^7.2.3",
     "@slimonitor/eslint-config": "git+https://github.com/Slimonitor/eslint-config.git",
+    "chai": "^4.2.0",
     "eslint": "^5.11.0",
-    "eslint-plugin-react": "^7.11.1"
+    "eslint-plugin-react": "^7.11.1",
+    "mocha": "^5.2.0"
   }
 }
