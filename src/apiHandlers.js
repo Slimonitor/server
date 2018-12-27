@@ -1,5 +1,5 @@
 const assert = require('assert');
-const debug = require('debug')('slimonitor:handlers');
+const debug = require('debug')('slimonitor:apiHandlers');
 const Memcache = require('fast-memory-cache');
 const utils = require('./utils.js');
 const Host = require('../schema/host.js');
@@ -109,6 +109,7 @@ module.exports = {
                     return host._id;
                 });
         }).then(hostId => {
+            debug('Received', req.body.messages.length, 'messages from', hostId);
             return {
                 hostId: hostId,
                 groupsOfMessages: groupMessagesByType(req.body.messages.map(message => {
@@ -135,16 +136,5 @@ module.exports = {
                 message: err.toString()
             });
         });
-    },
-    catchError: (err, req, res, next) => {
-        if (err) {
-            debug('ERROR', err.toString());
-            res.json({
-                error: true,
-                message: err.toString()
-            });
-        } else {
-            next();
-        }
     }
 };

@@ -6,13 +6,13 @@ const util = require('util');
 
 const app = express();
 const config = require('../config.js');
-const handlers = require('./handlers.js');
+const handlers = require('./apiHandlers.js');
 
 mongoose.Promise = global.Promise;
 app.use(bodyParser.json({limit: '50mb'}));
 app.post('/host/register', handlers.registerHost);
 app.post('/host/data', handlers.collectIncomingData);
-app.use(handlers.catchError);
+app.use(errorHandler);
 
 mongoose.set('useFindAndModify', false); // todo: remove in production phase after mongo updates crud
 mongoose.connect(config.mongoDbUrl, config.mongooseOptions).then(() => {
@@ -24,3 +24,14 @@ mongoose.connect(config.mongoDbUrl, config.mongooseOptions).then(() => {
     debug(err.toString());
 });
 
+function errorHandler(err, req, res, next) {
+    if (err) {
+        debug('ERROR', err.toString());
+        res.json({
+            error: true,
+            message: err.toString()
+        });
+    } else {
+        next();
+    }
+}
