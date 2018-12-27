@@ -3,8 +3,15 @@ const debug = require('debug')('slimonitor:handlers');
 const Memcache = require('fast-memory-cache');
 const utils = require('./utils.js');
 const Host = require('../schema/host.js');
+const Health = require('../schema/health.js');
 
 const knownHosts = new Memcache();
+const messageTypes = {
+    'hostHeath': {
+        keys: ['mem', 'load'],
+        handler: handleHealthData
+    }
+};
 
 /**
  * Filters message data according to message type
@@ -14,14 +21,41 @@ const knownHosts = new Memcache();
  */
 function filterSignificantMessageData(message) {
     let filteredMessage = utils.filterObjectKeys(message, ['type', 'timestamp', 'data']);
-    switch (filteredMessage.type) {
-        case 'hostHeath':
-            filteredMessage.data = utils.filterObjectKeys(message.data, ['mem', 'load']);
-            break;
-        default:
-            throw new Error('Unknown message type');
+    if (messageTypes[filteredMessage.type] === undefined) {
+        throw new Error('Unknown message type');
+    }
+    if (messageTypes[filteredMessage.type].keys) {
+        filteredMessage.data = utils.filterObjectKeys(message.data, messageTypes[filteredMessage.type].keys);
     }
     return filteredMessage;
+}
+
+/**
+ * Groups messages by type
+ * @param messages array of objects
+ * @returns object type => [messages]
+ */
+function groupMessagesByType(messages) {
+    let groups = {};
+    messages.forEach(message => {
+        if (message.type in groups) {
+            groups[message.type].push(message);
+        } else {
+            groups[message.type] = [message];
+        }
+    });
+    return groups;
+}
+
+function handleHealthData(hostId, messages) {
+    return Health.insertMany(messages.map(message => {
+        return {
+            host: hostId,
+            timestamp: message.timestamp,
+            mem: message.data.mem,
+            load: message.data.load
+        };
+    }));
 }
 
 module.exports = {
@@ -75,14 +109,22 @@ module.exports = {
                     return host._id;
                 });
         }).then(hostId => {
-            const messages = req.body.messages.map(message => {
-                try {
-                    return filterSignificantMessageData(message);
-                } catch (error) {
-                    return null;
-                }
-            }).filter(msg => msg);
-            debug('got', messages.length, 'messages from', hostId);
+            return {
+                hostId: hostId,
+                groupsOfMessages: groupMessagesByType(req.body.messages.map(message => {
+                    try {
+                        return filterSignificantMessageData(message);
+                    } catch (error) {
+                        return null;
+                    }
+                }).filter(msg => msg))
+            };
+        }).then(({hostId, groupsOfMessages}) => {
+            return Promise.all(Object.keys(groupsOfMessages).map(messageType => {
+                const messages = groupsOfMessages[messageType];
+                messageTypes[messageType].handler(hostId, messages);
+            }));
+        }).then(() => {
             res.json({
                 error: false,
                 message: 'OK'
