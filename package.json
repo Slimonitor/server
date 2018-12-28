@@ -2,7 +2,7 @@
   "name": "server",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "private": true,
   "scripts": {
     "test": "mocha || exit 1",
     "start": "npm run build && DEBUG=slimonitor:* node dist/index.js",
@@ -25,6 +25,7 @@
   "homepage": "https://github.com/Slimonitor/server#readme",
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
+    "autoprefixer": "^9.4.3",
     "body-parser": "^1.18.3",
     "chart.js": "^2.7.3",
     "debug": "^4.1.1",
