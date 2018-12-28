@@ -36,6 +36,7 @@ class Chart extends Component {
             ]
         };
         const options = {
+            animation: false,
             scales: {
                 xAxes: [{
                     type: 'time',
