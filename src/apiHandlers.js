@@ -7,7 +7,7 @@ const Health = require('../schema/health.js');
 
 const knownHosts = new Memcache();
 const messageTypes = {
-    'hostHeath': {
+    'hostHealth': {
         keys: ['mem', 'load'],
         handler: handleHealthData
     }
