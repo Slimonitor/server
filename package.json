@@ -7,7 +7,7 @@
     "test": "mocha || exit 1",
     "start": "npm run build && DEBUG=slimonitor:* node dist/index.js",
     "start-windows": "npm run build && set DEBUG=slimonitor:* && node dist/index.js",
-    "build": "babel src -d dist",
+    "build": "webpack && babel src -d dist",
     "lint": "eslint src schema",
     "pre-commit": "(npm run lint && npm test) || exit 1",
     "hooks": "(echo '#!/bin/sh' && echo 'npm run pre-commit') > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
