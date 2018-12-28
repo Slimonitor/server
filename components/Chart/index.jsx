@@ -35,10 +35,22 @@ class Chart extends Component {
                 }
             ]
         };
+        const options = {
+            scales: {
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        displayFormats: {
+                            second: 'mm:ss'
+                        }
+                    }
+                }]
+            }
+        };
         return (
             <div>
                 <h2>{this.props.title}</h2>
-                <Line data={data} />
+                <Line data={data} options={options} />
             </div>
         );
     }
