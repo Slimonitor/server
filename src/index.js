@@ -6,12 +6,14 @@ const util = require('util');
 
 const app = express();
 const config = require('../config.js');
-const handlers = require('./apiHandlers.js');
+const apiHandlers = require('./apiHandlers.js');
+const frontHandlers = require('./frontHandlers.js');
 
 mongoose.Promise = global.Promise;
 app.use(bodyParser.json({limit: '50mb'}));
-app.post('/host/register', handlers.registerHost);
-app.post('/host/data', handlers.collectIncomingData);
+app.post('/host/register', apiHandlers.registerHost);
+app.post('/host/data', apiHandlers.collectIncomingData);
+app.get('/data/:type', frontHandlers.retrieveStoredData);
 app.use(errorHandler);
 
 mongoose.connect(config.mongoDbUrl, config.mongooseOptions).then(() => {
