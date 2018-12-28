@@ -1,6 +1,7 @@
 const debug = require('debug')('slimonitor:frontHandlers');
 const Health = require('../schema/health.js');
 const Memcache = require('fast-memory-cache');
+const config = require('../config.js');
 
 const subscriptions = new Memcache(); // todo: currenly stored by clients in memory
 const dataTypeHandlers = {
@@ -8,10 +9,13 @@ const dataTypeHandlers = {
 };
 
 function retrieveHealthData() {
+    let till = new Date();
+    let from = new Date();
+    from.setTime(from.getTime() - config.displayWindow);
     return Health.aggregate().match({
         '$and': [ // todo - argument
-            {'timestamp': {'$gte': new Date(Date.UTC(2018, 11, 27, 23, 0, 0))}},
-            {'timestamp': {'$lte': new Date(Date.UTC(2018, 11, 27, 23, 6, 0))}}
+            {'timestamp': {'$gte': from}},
+            {'timestamp': {'$lte': till}}
         ]
     }).lookup({
         from: 'hosts',

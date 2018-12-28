@@ -25,6 +25,7 @@ export default class BackendApi {
     }
 
     onUpdate(update) {
+        //console.log(update);
         this._dispatch(refresh(update));
     }
 }

@@ -25,7 +25,7 @@ app.post('/host/data', apiHandlers.collectIncomingData);
 io.on('connection', client => {
     debug('Frontend connected', client.id);
     client.on('subscribe', frontHandlers.subscribeToUpdates.bind(this, client));
-    let healthLoop = setInterval(frontHandlers.pushUpdate.bind(this, client), 5000); // todo: example
+    let healthLoop = setInterval(frontHandlers.pushUpdate.bind(this, client), config.refreshRate); // todo: example
     client.on('disconnect', () => {
         debug('Frontend disconnected');
         clearInterval(healthLoop);
