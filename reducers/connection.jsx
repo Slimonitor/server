@@ -4,7 +4,7 @@ const initialState = {
     isConnected: false
 };
 
-export default function modal(state = initialState, action) {
+export default function (state = initialState, action) {
     switch (action.type) {
         case actionTypes.Connection:
             return {

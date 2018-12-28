@@ -23,8 +23,9 @@ app.use(express.static('static', {
 app.post('/host/register', apiHandlers.registerHost);
 app.post('/host/data', apiHandlers.collectIncomingData);
 io.on('connection', client => {
-    debug('Frontend connected');
-    let healthLoop = setInterval(frontHandlers.retrieveStoredData.bind(this, client), 5000); // todo: example
+    debug('Frontend connected', client.id);
+    client.on('subscribe', frontHandlers.subscribeToUpdates.bind(this, client));
+    let healthLoop = setInterval(frontHandlers.pushUpdate.bind(this, client), 5000); // todo: example
     client.on('disconnect', () => {
         debug('Frontend disconnected');
         clearInterval(healthLoop);

@@ -1,6 +1,8 @@
 const debug = require('debug')('slimonitor:frontHandlers');
 const Health = require('../schema/health.js');
+const Memcache = require('fast-memory-cache');
 
+const subscriptions = new Memcache(); // todo: currenly stored by clients in memory
 const dataTypeHandlers = {
     'hostHealth': retrieveHealthData
 };
@@ -27,17 +29,47 @@ function retrieveHealthData() {
 }
 
 module.exports = {
-    retrieveStoredData: (client) => {
-        debug('Polling data');
-        Promise.resolve().then(() => {
-            const type = 'hostHealth'; // todo: example
+    /**
+     * Subscribe to data feed
+     * @param client socket
+     * @param type string
+     * @param cb function to return all current subscriptions
+     */
+    subscribeToUpdates: (client, type, cb) => {
+        debug('Client subscribes to', type);
+        subscriptions.set(client.id, {
+            ...subscriptions.get(client.id),
+            [type]: true
+        });
+        cb(subscriptions.get(client.id));
+    },
+    /**
+     * Refresh client data
+     * @param client socket
+     */
+    pushUpdate: (client) => {
+        debug('Polling update');
+        let task = Promise.resolve({});
+        const clientSubscriptions = subscriptions.get(client.id);
+        if (!clientSubscriptions) {
+            return;
+        }
+        const requestedTypes = Object.keys(clientSubscriptions);
+        requestedTypes.forEach(type => {
             const handler = dataTypeHandlers[type];
-            if (handler === undefined) {
-                throw new Error('Unknown data type');
+            if (handler !== undefined) {
+                task = task.then(updates => {
+                    return handler().then(data => {
+                        return {
+                            ...updates,
+                            [type]: data
+                        };
+                    });
+                });
             }
-            return handler();
-        }).then(data => {
-            client.emit('health', data);
+        });
+        task.then(updates => {
+            client.emit('update', updates);
         }).catch(err => {
             debug(err.toString());
         });

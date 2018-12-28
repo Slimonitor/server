@@ -4,12 +4,19 @@ export function connection(isConnected) {
     return {
         type: actionTypes.Connection,
         isConnected: isConnected
-    }
+    };
 }
 
-export function refreshHealthData(data) {
+export function subscriptionsList(list) {
     return {
-        type: actionTypes.HealthData,
-        data: data
+        type: actionTypes.SubscriptionsList,
+        list: list
+    };
+}
+
+export function refresh(update) {
+    return {
+        type: actionTypes.Refresh,
+        update: update
     };
 }

@@ -8,7 +8,7 @@
     "start": "npm run build && DEBUG=slimonitor:* node dist/index.js",
     "start-windows": "npm run build && set DEBUG=slimonitor:* && node dist/index.js",
     "build": "webpack && babel src -d dist",
-    "lint": "eslint src schema",
+    "lint": "eslint src schema components reducers --ext js,jsx",
     "pre-commit": "(npm run lint && npm test) || exit 1",
     "hooks": "(echo '#!/bin/sh' && echo 'npm run pre-commit') > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
     "hooks-windows": "(echo #!/bin/sh && echo npm run pre-commit) > .git/hooks/pre-commit"
@@ -37,6 +37,7 @@
     "history": "^4.7.2",
     "keymirror": "^0.1.1",
     "mongoose": "^5.4.0",
+    "prop-types": "^15.6.2",
     "react": "^16.7.0",
     "react-chartjs-2": "^2.7.4",
     "react-dom": "^16.7.0",

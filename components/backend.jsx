@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import {connection, refreshHealthData} from './actions.jsx'
+import {connection, subscriptionsList, refresh} from './actions.jsx';
 
 export default class BackendApi {
     constructor(dispatch) {
@@ -8,12 +8,15 @@ export default class BackendApi {
         this._socket = io(document.location.origin); /* global document */
         this._socket.on('connect', this.onConnect.bind(this));
         this._socket.on('disconnect', this.onDisconnect.bind(this));
-        this._socket.on('health', this.onHealthData.bind(this));
+        this._socket.on('update', this.onUpdate.bind(this));
     }
 
     onConnect() {
         this.isConnected = true;
         this._dispatch(connection(this.isConnected));
+        this._socket.emit('subscribe', 'hostHealth', list => { // todo: example
+            this._dispatch(subscriptionsList(list));
+        });
     }
 
     onDisconnect() {
@@ -21,7 +24,7 @@ export default class BackendApi {
         this._dispatch(connection(this.isConnected));
     }
 
-    onHealthData(data) {
-        this._dispatch(refreshHealthData(data));
+    onUpdate(update) {
+        this._dispatch(refresh(update));
     }
 }

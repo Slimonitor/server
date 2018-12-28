@@ -1,4 +1,5 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import Chart from '../Chart';
 
@@ -13,10 +14,22 @@ class Dashboard extends Component {
                 <div>Connecting to server...</div>
             );
         }
+        let list = Object.keys(this.props.subscriptions).join(', ');
+        let chart = null;
+        if (this.props.subscriptions.hostHealth) {
+            chart = (
+                <Chart
+                    title={'Current Load'}
+                    axis={'timestamp'}
+                    value={'currentLoad'}
+                    data={Array.isArray(this.props.subscriptions.hostHealth) ? this.props.subscriptions.hostHealth : []}
+                />
+            );
+        }
         return (
             <div>
-                <div>Connected</div>
-                <div><Chart /></div>
+                <div>Connected. Current subscriptions: {list}</div>
+                <div>{chart}</div>
             </div>
         );
     }
