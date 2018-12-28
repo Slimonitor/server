@@ -8,6 +8,7 @@ import { createBrowserHistory } from 'history';
 
 import Dashboard from './Dashboard';
 import rootReducer from '../reducers';
+import Backend from './backend.jsx';
 
 const initialState = {};
 const history = createBrowserHistory();
@@ -21,6 +22,7 @@ const store = createStore(
         )
     )
 );
+const backend = new Backend(store.dispatch);
 
 render(
     <Provider store={store}>

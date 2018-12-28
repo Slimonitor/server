@@ -1,5 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import {connect} from 'react-redux';
+import Chart from '../Chart';
 
 class Dashboard extends Component {
     constructor(props) {
@@ -7,8 +8,16 @@ class Dashboard extends Component {
     }
 
     render() {
+        if (!this.props.connection.isConnected) {
+            return (
+                <div>Connecting to server...</div>
+            );
+        }
         return (
-            <div>React is ready.</div>
+            <div>
+                <div>Connected</div>
+                <div><Chart /></div>
+            </div>
         );
     }
 
