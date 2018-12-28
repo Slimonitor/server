@@ -4,7 +4,7 @@ var autoprefixer = require('autoprefixer');
 module.exports = {
     entry: ['./components/entry.jsx'],
     output: {
-        path: __dirname + '/dist',
+        path: __dirname + '/static',
         filename: 'entry.js'
     },
     resolve: {
@@ -15,7 +15,10 @@ module.exports = {
             {
                 test: /\.jsx$/,
                 exclude: /node_modules/,
-                loader: 'babel-loader'
+                loader: 'babel-loader',
+                query: {
+                    presets: ['@babel/env', '@babel/preset-react']
+                }
             },
             {
                 test: /\.scss$/,
@@ -50,8 +53,8 @@ module.exports = {
             }
         ]
     },
-    mode: process.env.NODE_ENV !== 'production' ? 'production' : 'development',
+    mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
     optimization: {
-        minimize: process.env.NODE_ENV !== 'production'
+        minimize: process.env.NODE_ENV === 'production'
     }
 };

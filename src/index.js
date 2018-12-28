@@ -11,6 +11,12 @@ const frontHandlers = require('./frontHandlers.js');
 
 mongoose.Promise = global.Promise;
 app.use(bodyParser.json({limit: '50mb'}));
+app.use(express.static('static', {
+    dotfiles: 'ignore',
+    etag: false,
+    extensions: ['html', 'js'],
+    maxAge: '1d'
+}));
 app.post('/host/register', apiHandlers.registerHost);
 app.post('/host/data', apiHandlers.collectIncomingData);
 app.get('/data/:type', frontHandlers.retrieveStoredData);
