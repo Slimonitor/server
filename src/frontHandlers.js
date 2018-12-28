@@ -1,4 +1,4 @@
-//const debug = require('debug')('slimonitor:frontHandlers');
+const debug = require('debug')('slimonitor:frontHandlers');
 const Health = require('../schema/health.js');
 
 const dataTypeHandlers = {
@@ -27,21 +27,19 @@ function retrieveHealthData() {
 }
 
 module.exports = {
-    retrieveStoredData: (req, res) => {
+    retrieveStoredData: (client) => {
+        debug('Polling data');
         Promise.resolve().then(() => {
-            const type = req.params.type;
+            const type = 'hostHealth'; // todo: example
             const handler = dataTypeHandlers[type];
             if (handler === undefined) {
                 throw new Error('Unknown data type');
             }
             return handler();
         }).then(data => {
-            res.json(data);
+            client.emit('health', data);
         }).catch(err => {
-            res.json({
-                error: true,
-                message: err.toString()
-            });
+            debug(err.toString());
         });
     }
 };
