@@ -6,8 +6,14 @@ class Chart extends Component {
     constructor(props) {
         super();
         this.displayName = props.title;
+        this.colors = {};
     }
 
+    /**
+     * @param data array of hosts
+     * @returns {Array}
+     * @todo: move to data preparation to backend?
+     */
     buildAxis(data) {
         let result = [];
         data.map(hostLevel => {
@@ -21,25 +27,36 @@ class Chart extends Component {
         return result;
     }
 
+    generateRandomColor() {
+        return [1,2,3].map(() => {
+            return Math.floor(Math.random() * (200 - 50 + 1)) + 50;
+        });
+    }
+
     buildDataForChart(data) {
         return {
             labels: this.buildAxis(data),
-            datasets: data.map(hostLevel => {
+            datasets: data.map((hostLevel, i) => {
+                if (!this.colors[i]) {
+                    this.colors[i] = this.generateRandomColor().join(',');
+                }
+                let colorFull = 'rgba(' + this.colors[i] + ',1)';
+                let colorAlpha = 'rgba(' + this.colors[i] + ',0.4)';
                 return {
                     label: hostLevel.hostname,
                     fill: false,
                     lineTension: 0.1,
-                    backgroundColor: 'rgba(75,192,192,0.4)',
-                    borderColor: 'rgba(75,192,192,1)',
+                    backgroundColor: colorAlpha,
+                    borderColor: colorFull,
                     borderCapStyle: 'butt',
                     borderDash: [],
                     borderDashOffset: 0.0,
                     borderJoinStyle: 'miter',
-                    pointBorderColor: 'rgba(75,192,192,1)',
+                    pointBorderColor: colorFull,
                     pointBackgroundColor: '#fff',
                     pointBorderWidth: 1,
                     pointHoverRadius: 5,
-                    pointHoverBackgroundColor: 'rgba(75,192,192,1)',
+                    pointHoverBackgroundColor: colorFull,
                     pointHoverBorderColor: 'rgba(220,220,220,1)',
                     pointHoverBorderWidth: 2,
                     pointRadius: 1,

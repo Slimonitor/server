@@ -16,6 +16,8 @@ const dataTypeHandlers = {
  * }]}
  * @returns {Promise}
  * @todo: simplify on node side?
+ * @todo: maybe pass data separately: timeline and values
+ * @todo: ensure hosts order
  */
 function retrieveHealthData() {
     let till = new Date();
