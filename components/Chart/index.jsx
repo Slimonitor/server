@@ -27,6 +27,7 @@ class Chart extends Component {
                 }
                 let colorFull = 'rgba(' + this.colors[i] + ',1)';
                 let colorAlpha = 'rgba(' + this.colors[i] + ',0.4)';
+                let previousValue = null; // todo: find a better way to fill _gaps_ in data
                 return {
                     label: hostname,
                     fill: false,
@@ -47,7 +48,10 @@ class Chart extends Component {
                     pointRadius: 1,
                     pointHitRadius: 10,
                     data: Object.keys(data.timeline).map(time => {
-                        return data.timeline[time][hostname] ? data.timeline[time][hostname].currentLoad : null;
+                        let value = data.timeline[time][hostname] ?
+                            data.timeline[time][hostname].currentLoad : previousValue;
+                        previousValue = value;
+                        return value;
                     })
                 };
             })

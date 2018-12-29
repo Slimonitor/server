@@ -11,6 +11,7 @@ const dataTypeHandlers = {
 
 /**
  * {timeline => {time => {host => {currentLoad, ...}}, hosts: [...]}
+ * @todo: use number of records instead and ensure constant number frames in window
  * @returns {Promise}
  */
 function retrieveHealthData() {
