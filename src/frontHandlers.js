@@ -9,21 +9,14 @@ const dataTypeHandlers = {
 };
 
 /**
- * {type => [{
- *      hostname, values => [{
- *          axis, currentLoad
- *      }]
- * }]}
+ * {timeline => {time => {host => {currentLoad, ...}}, hosts: [...]}
  * @returns {Promise}
- * @todo: simplify on node side?
- * @todo: maybe pass data separately: timeline and values
- * @todo: ensure hosts order
  */
 function retrieveHealthData() {
     let till = new Date();
     let from = new Date();
     from.setTime(from.getTime() - config.displayWindow);
-    return Health.aggregate().match({ // limit time frame
+    return Health.aggregate().match({ // limit display window
         '$and': [
             {'timestamp': {'$gte': from}},
             {'timestamp': {'$lte': till}}
@@ -35,44 +28,27 @@ function retrieveHealthData() {
         as: 'hostData'
     }).unwind('hostData').project({
         '_id': 0,
-        'hostname': '$hostData.name', // leave only name
+        'hostname': '$hostData.name',
         'currentLoad': '$load.currentload', // select required data
-        'axis': { // prepare time to reduce accuracy to the seconds level
-            'year': {'$year': '$timestamp'},
-            'month': {'$month': '$timestamp'},
-            'day': {'$dayOfMonth': '$timestamp'},
-            'hour': {'$hour': '$timestamp'},
-            'minute': {'$minute': '$timestamp'},
-            'second': {'$second': '$timestamp'}
-        }
-    }).group({ // reduce accuracy to ensure consistency between hosts
-        '_id': {
-            'hostname': '$hostname',
-            'axis': '$axis'
-        },
-        'currentLoad': {
-            '$first': '$currentLoad'
-        }
-    }).group({ // final array of values
-        '_id': '$_id.hostname',
-        'values': {
-            '$push': {
-                'axis': '$_id.axis',
-                'currentLoad': '$currentLoad'
+        'timestamp': '$timestamp'
+    }).sort({'timestamp': 1}).exec().then(dump => { // sort can not be performed by mongo due to $push used
+        let timeline = {};
+        let hosts = [];
+        dump.forEach(row => {
+            let reducedDate = new Date(row.timestamp.setMilliseconds(0));
+            if (timeline[reducedDate] === undefined) {
+                timeline[reducedDate] = {};
             }
-        }
-    }).project({ // renames
-        '_id': 0,
-        'hostname': '$_id',
-        'values': '$values'
-    }).exec().then(result => { // sort can not be performed by mongo due to $push used
-        result.forEach(hostLevel => hostLevel.values.sort((a, b) => {
-            let aDate = new Date(a.axis.year, a.axis.month - 1, a.axis.day, a.axis.hour, a.axis.minute, a.axis.second);
-            let bDate = new Date(b.axis.year, b.axis.month - 1, b.axis.day, b.axis.hour, b.axis.minute, b.axis.second);
-            // dates can not be same due to group operation performed by mongo
-            return aDate < bDate ? -1 : 1;
-        }));
-        return result;
+            if (timeline[reducedDate][row.hostname] === undefined) {
+                timeline[reducedDate][row.hostname] = {
+                    currentLoad: row.currentLoad
+                };
+            }
+            if (hosts.indexOf(row.hostname) === -1) {
+                hosts.push(row.hostname);
+            }
+        });
+        return {timeline, hosts};
     });
 }
 

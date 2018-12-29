@@ -9,24 +9,6 @@ class Chart extends Component {
         this.colors = {};
     }
 
-    /**
-     * @param data array of hosts
-     * @returns {Array}
-     * @todo: move to data preparation to backend?
-     */
-    buildAxis(data) {
-        let result = [];
-        data.map(hostLevel => {
-            return hostLevel.values.map(row => {
-                return new Date(row.axis.year, row.axis.month - 1, row.axis.day,
-                    row.axis.hour, row.axis.minute, row.axis.second);
-            });
-        }).forEach(hostLevel => {
-            result = [...result, ...hostLevel];
-        });
-        return result;
-    }
-
     generateRandomColor() {
         return [1,2,3].map(() => {
             return Math.floor(Math.random() * (200 - 50 + 1)) + 50;
@@ -34,16 +16,19 @@ class Chart extends Component {
     }
 
     buildDataForChart(data) {
+        if (typeof(data.timeline) !== 'object') {
+            return {};
+        }
         return {
-            labels: this.buildAxis(data),
-            datasets: data.map((hostLevel, i) => {
+            labels: Object.keys(data.timeline).map(v => {return new Date(v);}),
+            datasets: data.hosts.map((hostname, i) => {
                 if (!this.colors[i]) {
                     this.colors[i] = this.generateRandomColor().join(',');
                 }
                 let colorFull = 'rgba(' + this.colors[i] + ',1)';
                 let colorAlpha = 'rgba(' + this.colors[i] + ',0.4)';
                 return {
-                    label: hostLevel.hostname,
+                    label: hostname,
                     fill: false,
                     lineTension: 0.1,
                     backgroundColor: colorAlpha,
@@ -61,7 +46,9 @@ class Chart extends Component {
                     pointHoverBorderWidth: 2,
                     pointRadius: 1,
                     pointHitRadius: 10,
-                    data: hostLevel.values.map(row => row[this.props.value])
+                    data: Object.keys(data.timeline).map(time => {
+                        return data.timeline[time][hostname] ? data.timeline[time][hostname].currentLoad : null;
+                    })
                 };
             })
         };
@@ -95,7 +82,7 @@ Chart.propTypes = {
     title: PropTypes.string,
     axis: PropTypes.string,
     value: PropTypes.string,
-    data: PropTypes.array
+    data: PropTypes.object
 };
 
 

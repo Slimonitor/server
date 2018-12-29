@@ -16,13 +16,13 @@ class Dashboard extends Component {
         }
         let list = Object.keys(this.props.subscriptions).join(', ');
         let chart = null;
-        if (this.props.subscriptions.hostHealth) {
+        if (typeof(this.props.subscriptions.hostHealth) === 'object') {
             chart = (
                 <Chart
                     title={'Current Load'}
                     axis={'timestamp'}
                     value={'currentLoad'}
-                    data={Array.isArray(this.props.subscriptions.hostHealth) ? this.props.subscriptions.hostHealth : []}
+                    data={this.props.subscriptions.hostHealth}
                 />
             );
         }
