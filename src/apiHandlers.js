@@ -47,6 +47,11 @@ function groupMessagesByType(messages) {
     return groups;
 }
 
+/**
+ * Save host health data in database
+ * @param hostId string
+ * @param messages array of objects
+ */
 function handleHealthData(hostId, messages) {
     return Health.insertMany(messages.map(message => {
         return {

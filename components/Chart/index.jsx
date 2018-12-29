@@ -8,12 +8,25 @@ class Chart extends Component {
         this.displayName = props.title;
     }
 
-    render() {
-        const data = {
-            labels: this.props.data.map(row => row[this.props.axis]),
-            datasets: [
-                {
-                    label: 'My First dataset',
+    buildAxis(data) {
+        let result = [];
+        data.map(hostLevel => {
+            return hostLevel.values.map(row => {
+                return new Date(row.axis.year, row.axis.month - 1, row.axis.day,
+                    row.axis.hour, row.axis.minute, row.axis.second);
+            });
+        }).forEach(hostLevel => {
+            result = [...result, ...hostLevel];
+        });
+        return result;
+    }
+
+    buildDataForChart(data) {
+        return {
+            labels: this.buildAxis(data),
+            datasets: data.map(hostLevel => {
+                return {
+                    label: hostLevel.hostname,
                     fill: false,
                     lineTension: 0.1,
                     backgroundColor: 'rgba(75,192,192,0.4)',
@@ -31,10 +44,14 @@ class Chart extends Component {
                     pointHoverBorderWidth: 2,
                     pointRadius: 1,
                     pointHitRadius: 10,
-                    data: this.props.data.map(row => row[this.props.value])
-                }
-            ]
+                    data: hostLevel.values.map(row => row[this.props.value])
+                };
+            })
         };
+    }
+
+    render() {
+        const data = this.buildDataForChart(this.props.data);
         const options = {
             animation: false,
             scales: {
@@ -42,7 +59,7 @@ class Chart extends Component {
                     type: 'time',
                     time: {
                         displayFormats: {
-                            second: 'mm:ss'
+                            second: 'hh:mm:ss'
                         }
                     }
                 }]

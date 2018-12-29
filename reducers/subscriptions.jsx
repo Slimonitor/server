@@ -1,6 +1,6 @@
 import actionTypes from '../components/constants.jsx';
 
-const initialState = {}; // type => data object
+const initialState = {}; // type => [{hostname, values}]
 
 export default function (state = initialState, action) {
     switch (action.type) {
