@@ -4,6 +4,7 @@ const Memcache = require('fast-memory-cache');
 const config = require('../config.js');
 
 const subscriptions = new Memcache(); // todo: currenly stored by clients in memory
+let healthLoop = null; // todo: example
 const dataTypeHandlers = {
     'hostHealth': retrieveHealthData
 };
@@ -52,50 +53,67 @@ function retrieveHealthData() {
     });
 }
 
-module.exports = {
-    /**
-     * Subscribe to data feed
-     * @param client socket
-     * @param type string
-     * @param cb function to return all current subscriptions
-     */
-    subscribeToUpdates: (client, type, cb) => {
-        debug('Client subscribes to', type);
-        subscriptions.set(client.id, {
-            ...subscriptions.get(client.id),
-            [type]: true
-        });
-        cb(subscriptions.get(client.id));
-    },
-    /**
-     * Refresh client data
-     * @param client socket
-     */
-    pushUpdate: (client) => {
-        debug('Polling update');
-        let task = Promise.resolve({});
-        const clientSubscriptions = subscriptions.get(client.id);
-        if (!clientSubscriptions) {
-            return;
-        }
-        const requestedTypes = Object.keys(clientSubscriptions);
-        requestedTypes.forEach(type => {
-            const handler = dataTypeHandlers[type];
-            if (handler !== undefined) {
-                task = task.then(updates => {
-                    return handler().then(data => {
-                        return {
-                            ...updates,
-                            [type]: data
-                        };
-                    });
-                });
-            }
-        });
-        task.then(updates => {
-            client.emit('update', updates);
-        }).catch(err => {
-            debug(err.toString());
-        });
+function disconnectFront(client) {
+    debug('Frontend disconnected', client.id);
+    if (healthLoop) {
+        clearInterval(healthLoop);
     }
+}
+
+/**
+ * Refresh client data
+ * @param client socket
+ */
+function pushUpdate(client) {
+    debug('Polling update');
+    let task = Promise.resolve({});
+    const clientSubscriptions = subscriptions.get(client.id);
+    if (!clientSubscriptions) {
+        return;
+    }
+    const requestedTypes = Object.keys(clientSubscriptions);
+    requestedTypes.forEach(type => {
+        const handler = dataTypeHandlers[type];
+        if (handler !== undefined) {
+            task = task.then(updates => {
+                return handler().then(data => {
+                    return {
+                        ...updates,
+                        [type]: data
+                    };
+                });
+            });
+        }
+    });
+    task.then(updates => {
+        client.emit('update', updates);
+    }).catch(err => {
+        debug(err.toString());
+    });
+}
+
+/**
+ * Subscribe to data feed
+ * @param client socket
+ * @param type string
+ * @returns Promise
+ */
+function subscribeToUpdates(client, type, cb) {
+    debug('Client subscribes to', type);
+    subscriptions.set(client.id, {
+        ...subscriptions.get(client.id),
+        [type]: true
+    });
+    let list = subscriptions.get(client.id);
+    if (Object.keys(list).length > 0) {
+        debug('Setting up regular notifications'); // todo: example
+        healthLoop = setInterval(pushUpdate.bind(this, client), config.refreshRate);
+    }
+    cb(list);
+}
+
+module.exports = client => {
+    debug('Frontend connected', client.id);
+    client.on('subscribe', subscribeToUpdates.bind(this, client));
+    client.on('disconnect', disconnectFront.bind(this, client));
 };

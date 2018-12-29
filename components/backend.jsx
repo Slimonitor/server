@@ -5,6 +5,7 @@ export default class BackendApi {
     constructor(dispatch) {
         this._dispatch = dispatch;
         this.isConnected = false;
+        this._bundleId = null;
         this._socket = io(document.location.origin); /* global document */
         this._socket.on('connect', this.onConnect.bind(this));
         this._socket.on('disconnect', this.onDisconnect.bind(this));
@@ -12,6 +13,14 @@ export default class BackendApi {
     }
 
     onConnect() {
+        if (this._bundleId !== this._socket.id) {
+            if (this._bundleId === null) {
+                this._bundleId = this._socket.id;
+            } else {
+                window.location.reload(true);
+                return;
+            }
+        }
         this.isConnected = true;
         this._dispatch(connection(this.isConnected));
         this._socket.emit('subscribe', 'hostHealth', list => { // todo: example

@@ -22,15 +22,7 @@ app.use(express.static('static', {
 }));
 app.post('/host/register', apiHandlers.registerHost);
 app.post('/host/data', apiHandlers.collectIncomingData);
-io.on('connection', client => {
-    debug('Frontend connected', client.id);
-    client.on('subscribe', frontHandlers.subscribeToUpdates.bind(this, client));
-    let healthLoop = setInterval(frontHandlers.pushUpdate.bind(this, client), config.refreshRate); // todo: example
-    client.on('disconnect', () => {
-        debug('Frontend disconnected');
-        clearInterval(healthLoop);
-    });
-});
+io.on('connection', frontHandlers);
 app.use(errorHandler);
 
 mongoose.connect(config.mongoDbUrl, config.mongooseOptions).then(() => {
