@@ -15,7 +15,7 @@ export default class BackendApi {
     onConnect() {
         if (this._bundleId !== this._socket.id) {
             if (this._bundleId === null) {
-                this._bundleId = this._socket.id;
+                this._bundleId = this._socket.id; // todo: can we rely on this?
             } else {
                 window.location.reload(true);
                 return;

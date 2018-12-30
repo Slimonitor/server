@@ -3,8 +3,8 @@ const Health = require('../schema/health.js');
 const Memcache = require('fast-memory-cache');
 const config = require('../config.js');
 
-const subscriptions = new Memcache(); // todo: currenly stored by clients in memory
-let healthLoop = null; // todo: example
+const subscriptions = new Memcache(); // todo: currently stored by clients in memory
+let healthLoop = null; // todo: example, should be in client context
 const dataTypeHandlers = {
     'hostHealth': retrieveHealthData
 };
