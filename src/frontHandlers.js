@@ -3,8 +3,10 @@ const Health = require('../schema/health.js');
 const Memcache = require('fast-memory-cache');
 const config = require('../config.js');
 
+/**
+ * clientId => {list, loop}
+ */
 const subscriptions = new Memcache(); // todo: currently stored by clients in memory
-let healthLoop = null; // todo: example, should be in client context
 const dataTypeHandlers = {
     'hostHealth': retrieveHealthData
 };
@@ -56,8 +58,9 @@ function retrieveHealthData() {
 
 function disconnectFront(client) {
     debug('Frontend disconnected', client.id);
-    if (healthLoop) {
-        clearInterval(healthLoop);
+    const clientSubscriptions = subscriptions.get(client.id);
+    if (clientSubscriptions && clientSubscriptions.loop) {
+        clearInterval(clientSubscriptions.loop);
     }
 }
 
@@ -72,8 +75,7 @@ function pushUpdate(client) {
     if (!clientSubscriptions) {
         return;
     }
-    const requestedTypes = Object.keys(clientSubscriptions);
-    requestedTypes.forEach(type => {
+    clientSubscriptions.list.forEach(type => {
         const handler = dataTypeHandlers[type];
         if (handler !== undefined) {
             task = task.then(updates => {
@@ -97,20 +99,23 @@ function pushUpdate(client) {
  * Subscribe to data feed
  * @param client socket
  * @param type string
- * @returns Promise
+ * @param cb function to pass the list of active subscriptions
  */
 function subscribeToUpdates(client, type, cb) {
     debug('Client subscribes to', type);
-    subscriptions.set(client.id, {
-        ...subscriptions.get(client.id),
-        [type]: true
-    });
-    let list = subscriptions.get(client.id);
-    if (Object.keys(list).length > 0) {
-        debug('Setting up regular notifications'); // todo: example
-        healthLoop = setInterval(pushUpdate.bind(this, client), config.refreshRate);
+    let clientSubscriptions = subscriptions.get(client.id) || {
+        list: [],
+        loop: null
+    };
+    if (clientSubscriptions.list.indexOf(type) === -1) {
+        clientSubscriptions.list = clientSubscriptions.list.concat([type]);
+        if (clientSubscriptions.loop) {
+            clearInterval(clientSubscriptions.loop);
+        }
+        clientSubscriptions.loop = setInterval(pushUpdate.bind(this, client), config.refreshRate);
+        subscriptions.set(client.id, clientSubscriptions);
     }
-    cb(list);
+    cb(clientSubscriptions.list);
 }
 
 module.exports = client => {

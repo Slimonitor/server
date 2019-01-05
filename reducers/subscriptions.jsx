@@ -6,10 +6,10 @@ export default function (state = initialState, action) {
     switch (action.type) {
         case actionTypes.SubscriptionsList: {
             let newState = state;
-            Object.keys(action.list).forEach(type => {
+            action.list.forEach(type => {
                 newState = {
                     ...newState,
-                    [type]: typeof (action.list[type]) === 'object' ? action.list[type] : {}
+                    [type]: {}
                 };
             });
             return newState;
