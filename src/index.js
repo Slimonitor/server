@@ -27,9 +27,9 @@ app.use(errorHandler);
 
 mongoose.connect(config.mongoDbUrl, config.mongooseOptions).then(() => {
     debug('Connected to MongoDb');
-    return util.promisify(server.listen).call(server, config.port);
+    return util.promisify(server.listen).call(server, config.listen);
 }).then(() => {
-    debug('Start serving on port', config.port);
+    debug('Started serving on', config.listen);
 }).catch(err => {
     debug(err.toString());
 });
