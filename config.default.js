@@ -1,10 +1,10 @@
 module.exports = {
     listen: {
         port: 80,
-        host: '0.0.0.0',
+        host: '0.0.0.0'
     },
     mongoDbUrl: 'mongodb://<user>:<password>@<host>:<port>/<database>',
-    refreshRate: 5000,
+    refreshFrequency: 5000,
     displayWindow: 10*60*1000,
     mongooseOptions: {
         useNewUrlParser: true,

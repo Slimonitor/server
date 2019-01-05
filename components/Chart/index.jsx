@@ -20,7 +20,7 @@ class Chart extends Component {
             return {};
         }
         return {
-            labels: Object.keys(data.timeline).map(v => {return new Date(v);}),
+            labels: Object.keys(data.timeline).map(v => {return new Date(parseInt(v));}),
             datasets: data.hosts.map((hostname, i) => {
                 if (!this.colors[i]) {
                     this.colors[i] = this.generateRandomColor().join(',');
