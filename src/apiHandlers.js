@@ -66,14 +66,26 @@ function handleHealthData(hostId, messages) {
 module.exports = {
     registerHost: (req, res) => {
         Promise.resolve().then(() => {
-            assert.ok(req.body.name, 'Argument name is not defined');
-            assert.ok(typeof(req.body.name) === 'string', 'Argument name must be a string');
+            assert.ok(req.body.host.name, 'Argument host.name is not defined');
+            assert.ok(typeof(req.body.host.name) === 'string', 'Argument host.name must be a string');
+            assert.ok(req.body.host.hostname, 'Argument host.hostname is not defined');
+            assert.ok(typeof(req.body.host.hostname) === 'string', 'Argument host.hostname must be a string');
+            assert.ok(req.body.host.description, 'Argument host.description is not defined');
+            assert.ok(typeof(req.body.host.description) === 'string', 'Argument host.description must be a string');
+            assert.ok(req.body.host.cluster, 'Argument host.cluster is not defined');
+            assert.ok(typeof(req.body.host.cluster) === 'string', 'Argument host.cluster must be a string');
             assert.ok(req.body.cpuInfo, 'Argument cpuInfo is not defined');
             assert.ok(typeof(req.body.cpuInfo) === 'object', 'Argument cpuInfo must be an object');
         }).then(() => {
             return Host.findOneAndUpdate(
                 {name: req.body.name},
-                {ip: req.ip, cpuInfo: req.body.cpuInfo},
+                {
+                    ip: req.ip,
+                    cpuInfo: req.body.cpuInfo,
+                    hostname: req.body.host.hostname,
+                    description: req.body.host.description,
+                    cluster: req.body.host.cluster
+                },
                 {new: true}
             );
         }).then(host => {
@@ -81,7 +93,10 @@ module.exports = {
                 return {host: host, isNew: false};
             }
             host = new Host({
-                name: req.body.name,
+                name: req.body.host.name,
+                hostname: req.body.host.hostname,
+                description: req.body.host.description,
+                cluster: req.body.host.cluster,
                 ip: req.ip,
                 cpuInfo: req.body.cpuInfo
             });
