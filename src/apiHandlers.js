@@ -85,7 +85,7 @@ module.exports = {
                 ip: req.ip,
                 cpuInfo: req.body.cpuInfo
             });
-            return {host: host.save(), isNew: true};
+            return host.save().then(document => ({host: document, isNew: true}));
         }).then(({host, isNew}) => {
             knownHosts.set(host._id, true);
             debug(isNew ? 'Registered new host' : 'Known host', host);
