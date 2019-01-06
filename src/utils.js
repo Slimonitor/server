@@ -14,5 +14,41 @@ module.exports = {
                 [key]: sourceObject[key]
             };
         }));
+    },
+
+    /**
+     * @returns integer[]
+     */
+    generateRandomColor: function() {
+        return [1,2,3].map(() => {
+            return Math.floor(Math.random() * (200 - 50 + 1)) + 50;
+        });
+    },
+
+    fillGapsInArray: function(data) {
+        let gaps = [];
+        const openGap = index => gaps.push({
+            begin: index,
+            end: null
+        });
+        const isGapOpened = () => gaps.length === 0 ? false : gaps[gaps.length - 1].end === null;
+        const closeGap = index => gaps[gaps.length - 1].end = index;
+        data.forEach((value, index) => {
+            if (value === null) {
+                if (!isGapOpened()) {
+                    openGap(index); // of null
+                }
+            } else {
+                if (isGapOpened()) {
+                    closeGap(index); // of value
+                }
+            }
+        });
+        gaps.forEach(gap => {
+            if ((gap.begin !== 0) && (gap.end !== null)) {
+                data = data.fill(data[gap.begin - 1], gap.begin, gap.end); // end index of value is not included
+            }
+        });
+        return data;
     }
 };

@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import {Line} from 'react-chartjs-2';
+import {generateRandomColor, fillGapsInArray} from '../../src/utils.js';
 
 class Chart extends Component {
     constructor(props) {
@@ -9,25 +10,20 @@ class Chart extends Component {
         this.colors = {};
     }
 
-    generateRandomColor() {
-        return [1,2,3].map(() => {
-            return Math.floor(Math.random() * (200 - 50 + 1)) + 50;
-        });
-    }
-
     buildDataForChart(data) {
         if (typeof(data.timeline) !== 'object') {
             return {};
         }
         return {
-            labels: Object.keys(data.timeline).map(v => {return new Date(v);}),
+            labels: Object.keys(data.timeline).map(v => {return new Date(parseInt(v));}),
             datasets: data.hosts.map((hostname, i) => {
                 if (!this.colors[i]) {
-                    this.colors[i] = this.generateRandomColor().join(',');
+                    this.colors[i] = generateRandomColor().join(',');
                 }
                 let colorFull = 'rgba(' + this.colors[i] + ',1)';
                 let colorAlpha = 'rgba(' + this.colors[i] + ',0.4)';
-                let previousValue = null; // todo: find a better way to fill _gaps_ in data
+                let preparedData = Object.keys(data.timeline)
+                    .map(time => data.timeline[time][hostname] ? data.timeline[time][hostname].currentLoad : null);
                 return {
                     label: hostname,
                     fill: false,
@@ -47,12 +43,7 @@ class Chart extends Component {
                     pointHoverBorderWidth: 2,
                     pointRadius: 1,
                     pointHitRadius: 10,
-                    data: Object.keys(data.timeline).map(time => {
-                        let value = data.timeline[time][hostname] ?
-                            data.timeline[time][hostname].currentLoad : previousValue;
-                        previousValue = value;
-                        return value;
-                    })
+                    data: fillGapsInArray(preparedData)
                 };
             })
         };

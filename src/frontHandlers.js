@@ -17,9 +17,9 @@ const dataTypeHandlers = {
  * @returns {Promise}
  */
 function retrieveHealthData() {
-    let till = new Date();
-    let from = new Date();
-    from.setTime(from.getTime() - config.displayWindow);
+    const precision = 1000; // todo: config?
+    let till = new Date(Math.floor(Date.now() / precision) * precision);
+    let from = new Date(till.getTime() - config.displayWindow);
     return Health.aggregate().match({ // limit display window
         '$and': [
             {'timestamp': {'$gte': from}},
@@ -33,20 +33,22 @@ function retrieveHealthData() {
     }).unwind('hostData').project({
         '_id': 0,
         'hostname': '$hostData.name',
-        'currentLoad': '$load.currentload', // select required data
+        'currentLoad': '$load.currentload', // todo: select required data
         'timestamp': '$timestamp'
-    }).sort({'timestamp': 1}).exec().then(dump => { // sort can not be performed by mongo due to $push used
+    }).sort({'timestamp': 1}).exec().then(dump => {
         let timeline = {};
         let hosts = [];
+        for (let d = from.getTime(); d <= till.getTime(); d = d + precision) {
+            timeline[d] = {};
+        }
         dump.forEach(row => {
-            let reducedDate = new Date(row.timestamp.setMilliseconds(0));
-            if (timeline[reducedDate] === undefined) {
-                timeline[reducedDate] = {};
-            }
-            if (timeline[reducedDate][row.hostname] === undefined) {
-                timeline[reducedDate][row.hostname] = {
-                    currentLoad: row.currentLoad
-                };
+            let reducedDate = Math.floor(row.timestamp.getTime() / precision) * precision;
+            if (timeline[reducedDate]) {
+                if (timeline[reducedDate][row.hostname] === undefined) {
+                    timeline[reducedDate][row.hostname] = {
+                        currentLoad: row.currentLoad
+                    };
+                }
             }
             if (hosts.indexOf(row.hostname) === -1) {
                 hosts.push(row.hostname);
