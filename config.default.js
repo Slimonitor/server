@@ -4,7 +4,7 @@ module.exports = {
         host: '0.0.0.0'
     },
     mongoDbUrl: 'mongodb://<user>:<password>@<host>:<port>/<database>',
-    refreshFrequency: 5000,
+    refreshRate: 5000,
     displayWindow: 10*60*1000,
     mongooseOptions: {
         useNewUrlParser: true,

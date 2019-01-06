@@ -114,7 +114,7 @@ function subscribeToUpdates(client, type, cb) {
         if (clientSubscriptions.loop) {
             clearInterval(clientSubscriptions.loop);
         }
-        clientSubscriptions.loop = setInterval(pushUpdate.bind(this, client), config.refreshFrequency);
+        clientSubscriptions.loop = setInterval(pushUpdate.bind(this, client), config.refreshRate);
         subscriptions.set(client.id, clientSubscriptions);
     }
     cb(clientSubscriptions.list);
