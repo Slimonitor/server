@@ -27,12 +27,12 @@ module.exports = {
 
     fillGapsInArray: function(data) {
         let gaps = [];
-        let openGap = index => gaps.push({
+        const openGap = index => gaps.push({
             begin: index,
             end: null
         });
-        let isGapOpened = () => gaps.length === 0 ? false : gaps[gaps.length - 1].end === null;
-        let closeGap = index => gaps[gaps.length - 1].end = index;
+        const isGapOpened = () => gaps.length === 0 ? false : gaps[gaps.length - 1].end === null;
+        const closeGap = index => gaps[gaps.length - 1].end = index;
         data.forEach((value, index) => {
             if (value === null) {
                 if (!isGapOpened()) {
