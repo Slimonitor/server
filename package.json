@@ -29,7 +29,7 @@
     "autoprefixer": "^9.4.3",
     "babel-loader": "^8.0.4",
     "body-parser": "^1.18.3",
-    "chart.js": "^2.7.3",
+    "chart.js": "^2.9.4",
     "connected-react-router": "^6.1.0",
     "debug": "^4.1.1",
     "express": "^4.16.4",
